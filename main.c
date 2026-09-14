@@ -1,0 +1,52 @@
+/*
+ * GccApplication2.c
+ *
+ * Created: 14.09.2026 10:19:00
+ * Author : freholt
+ */ 
+
+#include <avr/io.h>
+#include <avr/interrupt.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdbool.h>
+
+#include "usart.h"
+#include "sram.h"
+
+
+// =========================================================
+//                 TEST PROGRAM - LAB 1
+// =========================================================
+
+int main(void)
+{
+	uint8_t received_character;
+
+	usart_init(9600);
+	usart_init_printf();
+	
+	sei();
+	
+	printf("\n\nATmegah162 starting...\n");
+	
+	xmem_init();
+	SRAM_test();
+	decoder_test();
+
+	while (1)
+	{
+		// Check whether the receive buffer contains data.
+		while (usart_rx(& received_character))
+		{
+			// Echo received character back to PuTTY.
+			usart_tx(received_character);
+		}
+	}
+
+	return 0;
+}
+
+
+
+
