@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      // Note: Properties here can override MPLAB project settings
+      "type": "mplab-core-da",
+      "request": "launch",
+      "name": "ATmega162 - Atmel-ICE JTAG",
+      "program": "${workspaceFolder}\\out\\Node_1\\default.elf",
+      "stopOnEntry": true,
+      "tool": "Atmel-ICE",
+      "device": "ATmega162",
+      "interface": "JTAG"
+    }
+  ]
+}

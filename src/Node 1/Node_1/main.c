@@ -26,6 +26,7 @@ int main(void)
 	usart_init_printf();
 	
 	printf("\n\nATmega162 starting...\n");
+	printf("\n\nTest123456\n");
 	
 	sei();
 

@@ -1,6 +1,12 @@
 # Prerequisites
 *.d
 
+# CMake and local build output
+_build/
+out/
+**/.generated/
+**/.vscode/*-local.json
+
 # Object files
 *.o
 *.ko
