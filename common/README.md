@@ -1,0 +1,1 @@
+Folder for common resources shared between nodes
