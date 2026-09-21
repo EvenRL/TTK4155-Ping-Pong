@@ -6,7 +6,7 @@
       "type": "mplab-core-da",
       "request": "launch",
       "name": "ATmega162 - Atmel-ICE JTAG",
-      "program": "${workspaceFolder}\\out\\Node_1\\default.elf",
+      "program": "${workspaceFolder}/out/Node_1/default.elf",
       "stopOnEntry": true,
       "tool": "Atmel-ICE",
       "device": "ATmega162",
