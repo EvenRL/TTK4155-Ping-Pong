@@ -14,6 +14,7 @@
 #include "usart.h"
 #include "sram.h"
 #include "joysticktouch.h"
+#include "SPI.h"
 
 int main(void)
 {
@@ -38,6 +39,11 @@ int main(void)
 	
 	printf("Calibration complete!\n");
 	
+	SPI_MasterInit();
+	SPI_SlaveInit();
+	oled_select();
+	SPI_MasterTransmit(0xaf);
+	oled_deselect();
 	
 	while (1)
 	{

@@ -1,10 +1,13 @@
+
+#include "SPI.h"
+
 // =========================================================
 //                          SPI MASTER
 // =========================================================
 
 void SPI_MasterInit(void){
-    // Set SS, MOSI and SCK to output
-    DDRB |= (1 << DDB4) | (1 << DDB5) | (1 << DDB7);
+    // Set SS, MOSI, SCK, D/C to output
+    DDRB |= (1 << DDB4) | (1 << DDB5) | (1 << DDB7) | (1 << DDB1);
     // Set MISO to input
     DDRB &= ~(1 << DDB6);
     // Set PB4 as output (SS)
@@ -15,6 +18,8 @@ void SPI_MasterInit(void){
 
 // uint instead of void to be able to return values if needed later
 uint8_t SPI_MasterTransmit(uint8_t data){
+    // Set D/C pin low to indicate command byte
+    PORTB &= ~(1 << PB1); // Fix later!!!!
     // Put the byte we want to transmit in the SPI Data Register
     SPDR = data;
 
@@ -42,8 +47,6 @@ void SPI_SlaveInit(void){
     OLED_SS_DDR |= (1 << OLED_SS_PIN);
     // set HIGH = not selected by default
     OLED_SS_PORT |= (1 << OLED_SS_PIN);
-    // Enable SPI
-    SPCR = (1 << SPE);
 }
 
 void oled_select(void){
