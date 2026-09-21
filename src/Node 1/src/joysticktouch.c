@@ -12,6 +12,8 @@
 #define ADC_ADDRESS 0x1000
 #define JOY_X_CHANNEL 0
 #define JOY_Y_CHANNEL 1
+#define TOUCH_X_CHANNEL 2
+#define TOUCH_Y_CHANNEL 3
 #define DEADZONE 3
 static uint8_t x_min;
 static uint8_t x_center;
@@ -150,7 +152,21 @@ joystick_direction_t joystick_get_direction(void) {
 	
 	return NEUTRAL;
 	
-	};
+}
+
+joystick_position_t touch_get_position(void)
+{
+	uint8_t adc_values[4];
+	joystick_position_t position;
+	adc_read(adc_values);
+	
+	position.x = adc_values[TOUCH_X_CHANNEL];
+		
+	position.y = adc_values[TOUCH_Y_CHANNEL];
+	
+	return position;
+}
+
 void adc_init(void)
 {
 	DDRD |= (1 << PD5);

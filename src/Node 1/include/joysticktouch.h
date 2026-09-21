@@ -22,5 +22,6 @@ void joystick_find_center(void);
 void joystick_calibrate(void);
 joystick_position_t joystick_get_position(void);
 joystick_direction_t joystick_get_direction(void);
+joystick_position_t touch_get_position(void);
 
 #endif
