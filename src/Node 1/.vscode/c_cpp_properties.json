@@ -1,0 +1,20 @@
+{
+  "version": 4,
+  "configurations": [
+    {
+      "name": "AVR Node 1",
+      "compilerPath": "/home/gruppe35/.mplab/app-finder/apps/avr-gcc/v7.3.0/avr8-gnu-toolchain-linux_x86_64/bin/avr-gcc",
+      "compileCommands": "/home/gruppe35/TTK4155-Ping-Pong/src/Node 1/_build/Node_1/default/compile_commands.json",
+      "includePath": [
+        "/home/gruppe35/TTK4155-Ping-Pong/src/Node 1/include",
+        "/home/gruppe35/TTK4155-Ping-Pong/src/Node 1/src",
+        "/home/gruppe35/.mchp_packs/Microchip/ATmega_DFP/3.6.299/include"
+      ],
+      "defines": [
+        "__ATmega162__",
+        "F_CPU=4915200L"
+      ],
+      "intelliSenseMode": "gcc-x86_64"
+    }
+  ]
+}
