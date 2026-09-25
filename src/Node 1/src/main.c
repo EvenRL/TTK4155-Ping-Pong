@@ -15,6 +15,8 @@
 #include "sram.h"
 #include "joysticktouch.h"
 #include "SPI.h"
+#include "oled.h"
+#include "graphics.h"
 
 int main(void)
 {
@@ -38,59 +40,132 @@ int main(void)
 	joystick_calibrate();
 	
 	printf("Calibration complete!\n");
+	printf("\033[2J\033[H");
 	
 	SPI_MasterInit();
-	SPI_SlaveInit();
-	oled_select();
-	SPI_MasterTransmit(0xaf);
-	oled_deselect();
+	OLED_Init();
+	OLED_Clear();
+	// OLED_WriteCommand(0xA5);
+	// OLED_WriteCommand(0xAF);
 	
+	//OLED_DrawBitmap(image);
+
+	// WASTED is 3 pages high and 105 pixels wide
+    // Start at page 2 and column 11 to roughly center it
+    for (uint8_t page = 0; page < WASTED_PAGES; page++)
+    {
+        OLED_GotoLine(2 + page);
+        OLED_GotoColumn(11);
+
+        for (uint8_t column = 0; column < WASTED_WIDTH; column++)
+        {
+            uint8_t data =
+                pgm_read_byte(&wasted_bitmap[page][column]);
+
+            OLED_WriteData(data);
+        }
+    }
+	
+
 	while (1)
 	{
-		adc_read(adc_values);
+		// adc_read(adc_values);
 		
-		joystick_position_t joystick = 
-			joystick_get_position();
+		// joystick_position_t joystick = 
+		// 	joystick_get_position();
 			
-		joystick_direction_t direction = joystick_get_direction();
+		// joystick_direction_t direction = joystick_get_direction();
 		
-		printf(
-		"Joy X: %4d%%  Y: %4d%%  ",
-		joystick.x,
-		joystick.y);
+		// printf(
+		// "Joy X: %4d%%  Y: %4d%%  ",
+		// joystick.x,
+		// joystick.y);
 		
-		_delay_ms(100);
+		// _delay_ms(100);
 		
 		
-		switch (direction)
-		{
-			case LEFT:
-			printf("LEFT  ");
-			break;
+		// switch (direction)
+		// {
+		// 	case LEFT:
+		// 	printf("LEFT  ");
+		// 	break;
 
-			case RIGHT:
-			printf("RIGHT  ");
-			break;
+		// 	case RIGHT:
+		// 	printf("RIGHT  ");
+		// 	break;
 
-			case UP:
-			printf("UP  ");
-			break;
+		// 	case UP:
+		// 	printf("UP  ");
+		// 	break;
 
-			case DOWN:
-			printf("DOWN  ");
-			break;
+		// 	case DOWN:
+		// 	printf("DOWN  ");
+		// 	break;
 
-			case NEUTRAL:
-			printf("NEUTRAL  ");
-			break;
-		}
+		// 	case NEUTRAL:
+		// 	printf("NEUTRAL  ");
+		// 	break;
+		// }
 		
-		joystick_position_t touch = touch_get_position();
-		printf(
-		"Touch-pad X: %3u  Y: %3u\n",
-		touch.x,
-		touch.y);
-		_delay_ms(100);
+		// touch_position_t touch = touch_get_position();
+
+		// printf(
+		// 	"Touch-pad X: %3u  Y: %3u\r\n",
+		// 	touch.x,
+		// 	touch.y
+		// ); 
+		
+		// //OLED_WriteCommand(0xAF);
+		// _delay_ms(100);
+
+		adc_read(adc_values);
+
+    	joystick_position_t joystick = joystick_get_position();
+    	joystick_direction_t direction = joystick_get_direction();
+    	touch_position_t touch = touch_get_position();
+
+    printf("\033[H");   // cursor back to top-left
+
+    printf("====================================\r\n");
+    printf("        JOYSTICK / TOUCHPAD\r\n");
+    printf("====================================\r\n");
+
+    printf("Joystick X : %4d %%\r\n", joystick.x);
+    printf("Joystick Y : %4d %%\r\n", joystick.y);
+
+    printf("Direction  : ");
+
+    switch (direction)
+    {
+        case LEFT:
+            printf("LEFT     ");
+            break;
+
+        case RIGHT:
+            printf("RIGHT    ");
+            break;
+
+        case UP:
+            printf("UP       ");
+            break;
+
+        case DOWN:
+            printf("DOWN     ");
+            break;
+
+        case NEUTRAL:
+            printf("NEUTRAL  ");
+            break;
+    }
+
+    printf("\r\n");
+
+    printf("Touch X    : %3u\r\n", touch.x);
+    printf("Touch Y    : %3u\r\n", touch.y);
+
+    printf("====================================\r\n");
+
+    _delay_ms(100);
 	}
 } 
 

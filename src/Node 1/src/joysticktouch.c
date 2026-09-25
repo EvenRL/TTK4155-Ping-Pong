@@ -154,17 +154,17 @@ joystick_direction_t joystick_get_direction(void) {
 	
 }
 
-joystick_position_t touch_get_position(void)
+touch_position_t touch_get_position(void)
 {
-	uint8_t adc_values[4];
-	joystick_position_t position;
-	adc_read(adc_values);
-	
-	position.x = adc_values[TOUCH_X_CHANNEL];
-		
-	position.y = adc_values[TOUCH_Y_CHANNEL];
-	
-	return position;
+    uint8_t adc_values[4];
+    touch_position_t position;
+
+    adc_read(adc_values);
+
+    position.x = adc_values[TOUCH_X_CHANNEL];
+    position.y = adc_values[TOUCH_Y_CHANNEL];
+
+    return position;
 }
 
 void adc_init(void)

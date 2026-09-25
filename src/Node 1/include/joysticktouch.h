@@ -7,6 +7,11 @@ typedef struct {
 	int8_t x;
 	int8_t y;
 	} joystick_position_t;
+
+typedef struct {
+    uint8_t x;
+    uint8_t y;
+} touch_position_t;
 	 
 typedef enum {
 	NEUTRAL,
@@ -22,6 +27,7 @@ void joystick_find_center(void);
 void joystick_calibrate(void);
 joystick_position_t joystick_get_position(void);
 joystick_direction_t joystick_get_direction(void);
-joystick_position_t touch_get_position(void);
+touch_position_t touch_get_position(void);
+	
 
 #endif
