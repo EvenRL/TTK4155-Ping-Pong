@@ -5,6 +5,17 @@
       // Note: Properties here can override MPLAB project settings
       "type": "mplab-core-da",
       "request": "launch",
+      "name": "ATmega162 - Upload only",
+      "program": "${workspaceFolder}/out/Node_1/default.elf",
+      "noDebug": true,
+      "tool": "Atmel-ICE",
+      "device": "ATmega162",
+      "interface": "JTAG"
+    },
+    {
+      // Note: Properties here can override MPLAB project settings
+      "type": "mplab-core-da",
+      "request": "launch",
       "name": "ATmega162 - Atmel-ICE JTAG",
       "program": "${workspaceFolder}/out/Node_1/default.elf",
       "stopOnEntry": true,
