@@ -15,6 +15,9 @@ void OLED_Init(void)
 
     PORTB |= (1 << PB3); // deselect OLED
 
+    OLED_WriteCommand(0xA1); // Segment remap
+    OLED_WriteCommand(0xC8); // Reverse COM output scan direction
+
     OLED_WriteCommand(0xA4);
     OLED_WriteCommand(0xA6);
     OLED_WriteCommand(0xAF);

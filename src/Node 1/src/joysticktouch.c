@@ -113,12 +113,10 @@ static int8_t joystick_map(
 	return (int8_t)result;	
 }
 
-joystick_position_t joystick_get_position(void)
+joystick_position_t joystick_get_position(uint8_t adc_values[4])
 {
-	uint8_t adc_values[4];
 	joystick_position_t position;
-	adc_read(adc_values);
-	
+
 	position.x = joystick_map(
 	adc_values[JOY_X_CHANNEL],
 	x_min,
@@ -134,32 +132,29 @@ joystick_position_t joystick_get_position(void)
 	return position;
 }
 
-#define DIRECTION_THRESHHOLD 30
-joystick_direction_t joystick_get_direction(void) {
-	
-	joystick_position_t joystick = joystick_get_position();
-	if (joystick.x < -DIRECTION_THRESHHOLD)
-		return LEFT;
-	
-	if (joystick.x > DIRECTION_THRESHHOLD)
-	return RIGHT;
-	
-	if (joystick.y > DIRECTION_THRESHHOLD)
-	return UP;
-	
-	if (joystick.y < -DIRECTION_THRESHHOLD)
-	return DOWN;
-	
-	return NEUTRAL;
-	
+#define DIRECTION_THRESHOLD 30
+
+joystick_direction_t joystick_get_direction(
+    joystick_position_t joystick)
+{
+    if (joystick.x < -DIRECTION_THRESHOLD)
+        return LEFT;
+
+    if (joystick.x > DIRECTION_THRESHOLD)
+        return RIGHT;
+
+    if (joystick.y > DIRECTION_THRESHOLD)
+        return UP;
+
+    if (joystick.y < -DIRECTION_THRESHOLD)
+        return DOWN;
+
+    return NEUTRAL;
 }
 
-touch_position_t touch_get_position(void)
+touch_position_t touch_get_position(uint8_t adc_values[4])
 {
-    uint8_t adc_values[4];
     touch_position_t position;
-
-    adc_read(adc_values);
 
     position.x = adc_values[TOUCH_X_CHANNEL];
     position.y = adc_values[TOUCH_Y_CHANNEL];
@@ -186,4 +181,65 @@ void adc_read(uint8_t values[4])
 	values[2] = *adc;
 	values[3] = *adc;
 }
+
+void joystick_button_init(void)
+{
+	// Set PD3 as input with pull-up resistor
+	DDRD	&= ~(1 << PD3);
+	PORTD	|= (1 << PD3);
+}
+
+bool joystick_button_pressed(void)
+{
+	// Return true if button is pressed (active low)
+	return !(PIND & (1 << PD3));
+}
+
+void display_joystick(
+	joystick_position_t joystick, 
+	joystick_direction_t direction, 
+	touch_position_t touch)
+{
+		printf("\033[H");   // cursor back to top-left
+
+    	printf("====================================\r\n");
+    	printf("        JOYSTICK / TOUCHPAD\r\n");
+    	printf("====================================\r\n");
+
+    	printf("Joystick X : %4d %%\r\n", joystick.x);
+    	printf("Joystick Y : %4d %%\r\n", joystick.y);
+
+    	printf("Direction  : ");
+
+    	switch (direction)
+		{
+			case LEFT:
+				printf("LEFT     ");
+				break;
+
+			case RIGHT:
+				printf("RIGHT    ");
+				break;
+
+			case UP:
+				printf("UP       ");
+				break;
+
+			case DOWN:
+				printf("DOWN     ");
+				break;
+
+			case NEUTRAL:
+				printf("NEUTRAL  ");
+				break;
+		}
+
+		printf("\r\n");
+
+		printf("Touch X    : %3u\r\n", touch.x);
+		printf("Touch Y    : %3u\r\n", touch.y);
+
+		printf("====================================\r\n");
+}
+
 
