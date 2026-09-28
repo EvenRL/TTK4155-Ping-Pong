@@ -52,13 +52,28 @@ int main(void)
 
 
 	while (1)
-	{
-		adc_read(adc_values);
+{
+    // Read ADC once
+    adc_read(adc_values);
 
-		menu_update(adc_values);
+    // Calculate everything from the same ADC reading
+    // joystick_position_t joystick =
+    //     joystick_get_position(adc_values);
 
-		_delay_ms(100);
-	}
+    // joystick_direction_t direction =
+    //     joystick_get_direction(joystick);
+
+    // touch_position_t touch =
+    //     touch_get_position(adc_values);
+
+    // Update OLED/menu
+    menu_update(adc_values);
+
+    // Display values in PuTTY
+    //display_joystick(joystick, direction, touch);
+
+    _delay_ms(100);
+}
 } 
 
 
