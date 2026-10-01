@@ -38,6 +38,14 @@ enum mcp_command {
     MCP_RTS_TXB2 = 0x84
 };
 
+enum mcp_modes {
+    MCP_MODE_NORMAL = 0x00,
+    MCP_MODE_SLEEP = 0x20,
+    MCP_MODE_LOOPBACK = 0x40,
+    MCP_MODE_LISTENONLY = 0x60,
+    MCP_MODE_CONFIG = 0x80
+};
+
 void mcp_read(uint8_t address, uint8_t* data, uint8_t length);
 void mcp_write(uint8_t address, const uint8_t* data, uint8_t length);
 void mcp_request_to_send(uint8_t tx_buffer);
