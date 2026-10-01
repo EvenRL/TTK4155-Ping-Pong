@@ -6,7 +6,12 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <avr/pgmspace.h>
+#include <util/delay.h>
+
+#define MENU_ITEM_COUNT 3
+#define JOYSTICK_REDRAW_THRESHOLD 2
 
 typedef enum {
     page_menu,
@@ -16,12 +21,60 @@ typedef enum {
 } menu_page_t;
 
 
+/* =========================
+   STATE
+   ========================= */
+
 static menu_page_t current_page = page_menu;
 
 static uint8_t menu_index = 0;
 
 static joystick_direction_t previous_direction = NEUTRAL;
+
+static joystick_position_t previous_joystick = {
+    .x = 0,
+    .y = 0
+};
+
 static bool previous_button = false;
+
+
+/* =========================
+   MENU ITEMS
+   ========================= */
+
+static const char *menu_items[MENU_ITEM_COUNT] = {
+    "Joystick",
+    "WASTED",
+    "Image"
+};
+
+
+/* =========================
+   HELPERS
+   ========================= */
+
+static const char *direction_to_string(
+    joystick_direction_t direction)
+{
+    switch (direction)
+    {
+        case LEFT:
+            return "LEFT";
+
+        case RIGHT:
+            return "RIGHT";
+
+        case UP:
+            return "UP";
+
+        case DOWN:
+            return "DOWN";
+
+        default:
+            return "NEUTRAL";
+    }
+}
 
 
 /* =========================
@@ -31,19 +84,35 @@ static bool previous_button = false;
 static void menu_draw_main(void)
 {
     OLED_Clear();
+
+    /*
+     * Normal display mode.
+     */
     OLED_WriteCommand(0xA6);
 
-    OLED_Pos(0, 0);
-    OLED_Print("MAIN MENU");
+    OLED_Pos(0, 2);
+    OLED_Print("=== MAIN MENU ===");
 
-    OLED_Pos(2, 0);
-    OLED_Print(menu_index == 0 ? "> Joystick" : "  Joystick");
 
-    OLED_Pos(3, 0);
-    OLED_Print(menu_index == 1 ? "> WASTED" : "  WASTED");
+    for (uint8_t i = 0; i < MENU_ITEM_COUNT; i++)
+    {
+        OLED_Pos(2 + i, 2);
 
-    OLED_Pos(4, 0);
-    OLED_Print(menu_index == 2 ? "> Image" : "  Image");
+        if (i == menu_index)
+        {
+            OLED_Print("> ");
+        }
+        else
+        {
+            OLED_Print("  ");
+        }
+
+        OLED_Print(menu_items[i]);
+    }
+
+
+    OLED_Pos(7, 0);
+    OLED_Print("UP/DOWN  BTN=SELECT");
 }
 
 
@@ -51,41 +120,80 @@ static void menu_draw_main(void)
    JOYSTICK PAGE
    ========================= */
 
-static void menu_draw_joystick_page(
+static void menu_draw_joystick_static(void)
+{
+    OLED_Clear();
+
+    OLED_Pos(0, 1);
+    OLED_Print("=== JOYSTICK ===");
+
+    OLED_Pos(6, 0);
+    OLED_Print("----------------");
+
+    OLED_Pos(7, 0);
+    OLED_Print("BTN = BACK");
+}
+
+
+static void menu_draw_joystick_values(
     joystick_position_t joystick,
     joystick_direction_t direction)
 {
     char buffer[20];
 
+
     OLED_Clear_Line(2);
-    OLED_Pos(2, 0);
+    OLED_Pos(2, 1);
 
     snprintf(
         buffer,
         sizeof(buffer),
-        "X:%4d%% Y:%4d%%",
-        joystick.x,
-        joystick.y
+        "X: %4d%%",
+        joystick.x
     );
 
     OLED_Print(buffer);
 
 
     OLED_Clear_Line(3);
-    OLED_Pos(3, 0);
+    OLED_Pos(3, 1);
 
     snprintf(
         buffer,
         sizeof(buffer),
-        "Dir: %s",
-        (direction == LEFT)  ? "LEFT" :
-        (direction == RIGHT) ? "RIGHT" :
-        (direction == UP)    ? "UP" :
-        (direction == DOWN)  ? "DOWN" :
-                               "NEUTRAL"
+        "Y: %4d%%",
+        joystick.y
     );
 
     OLED_Print(buffer);
+
+
+    OLED_Clear_Line(4);
+    OLED_Pos(4, 1);
+
+    snprintf(
+        buffer,
+        sizeof(buffer),
+        "DIR: %-7s",
+        direction_to_string(direction)
+    );
+
+    OLED_Print(buffer);
+}
+
+
+static void menu_open_joystick(
+    joystick_position_t joystick,
+    joystick_direction_t direction)
+{
+    menu_draw_joystick_static();
+
+    menu_draw_joystick_values(
+        joystick,
+        direction
+    );
+
+    previous_joystick = joystick;
 }
 
 
@@ -102,14 +210,21 @@ static void menu_draw_wasted_page(void)
         OLED_GotoLine(2 + page);
         OLED_GotoColumn(11);
 
-        for (uint8_t column = 0; column < WASTED_WIDTH; column++)
+        for (uint8_t column = 0;
+             column < WASTED_WIDTH;
+             column++)
         {
             uint8_t data =
-                pgm_read_byte(&wasted_bitmap[page][column]);
+                pgm_read_byte(
+                    &wasted_bitmap[page][column]
+                );
 
             OLED_WriteData(data);
         }
     }
+
+    OLED_Pos(7, 0);
+    OLED_Print("BTN = BACK");
 }
 
 
@@ -119,8 +234,116 @@ static void menu_draw_wasted_page(void)
 
 static void menu_draw_image_page(void)
 {
-    OLED_Clear();
-    OLED_DrawBitmap(image);
+    static const uint8_t animation_sequence[] = {
+        0, 1, 2, 3, 4, 3, 2, 1
+    };
+
+    const uint8_t sequence_length =
+        sizeof(animation_sequence) /
+        sizeof(animation_sequence[0]);
+
+    /*
+     * Wait for the button used to ENTER this page
+     * to be released.
+     */
+    while (joystick_button_pressed())
+    {
+        _delay_ms(10);
+    }
+
+    /*
+     * Keep animating until the button is pressed again.
+     */
+    while (!joystick_button_pressed())
+    {
+        for (uint8_t i = 0; i < sequence_length; i++)
+        {
+            uint8_t frame = animation_sequence[i];
+
+            for (uint8_t page = 0; page < 8; page++)
+            {
+                OLED_GotoLine(page);
+                OLED_GotoColumn(0);
+
+                for (uint8_t column = 0; column < 128; column++)
+                {
+                    uint16_t index =
+                        (uint16_t)page * 128 + column;
+
+                    uint8_t data =
+                        pgm_read_byte(
+                            &ping_pong_frames[frame][index]
+                        );
+
+                    OLED_WriteData(data);
+                }
+            }
+
+            /*
+             * Delay between animation frames.
+             */
+            _delay_ms(900);
+
+            /*
+             * Check BACK button between every frame.
+             */
+            if (joystick_button_pressed())
+            {
+                break;
+            }
+        }
+    }
+
+    /*
+     * Wait for BACK button release.
+     */
+    while (joystick_button_pressed())
+    {
+        _delay_ms(10);
+    }
+
+    current_page = page_menu;
+    menu_draw_main();
+}
+
+
+/* =========================
+   PAGE OPENING
+   ========================= */
+
+static void menu_open_selected_page(
+    joystick_position_t joystick,
+    joystick_direction_t direction)
+{
+    switch (menu_index)
+    {
+        case 0:
+            current_page = page_joystick;
+
+            menu_open_joystick(
+                joystick,
+                direction
+            );
+            break;
+
+
+        case 1:
+            current_page = page_wasted;
+
+            menu_draw_wasted_page();
+            break;
+
+
+        case 2:
+            current_page = page_image;
+
+            menu_draw_image_page();
+            break;
+
+
+        default:
+            break;
+    }
 }
 
 
@@ -131,12 +354,97 @@ static void menu_draw_image_page(void)
 void menu_init(void)
 {
     current_page = page_menu;
+
     menu_index = 0;
 
     previous_direction = NEUTRAL;
+
+    previous_joystick.x = 0;
+    previous_joystick.y = 0;
+
     previous_button = false;
 
     menu_draw_main();
+}
+
+
+/* =========================
+   MENU INPUT
+   ========================= */
+
+static void menu_handle_navigation(
+    joystick_direction_t direction)
+{
+    /*
+     * Require the joystick to return to neutral
+     * before accepting another menu movement.
+     */
+    if (previous_direction != NEUTRAL)
+    {
+        return;
+    }
+
+
+    if (direction == UP)
+    {
+        if (menu_index > 0)
+        {
+            menu_index--;
+
+            menu_draw_main();
+        }
+    }
+
+    else if (direction == DOWN)
+    {
+        if (menu_index < MENU_ITEM_COUNT - 1)
+        {
+            menu_index++;
+
+            menu_draw_main();
+        }
+    }
+}
+
+
+/* =========================
+   JOYSTICK UPDATE
+   ========================= */
+
+static void menu_update_joystick_page(
+    joystick_position_t joystick,
+    joystick_direction_t direction)
+{
+    int16_t dx =
+        abs(
+            joystick.x -
+            previous_joystick.x
+        );
+
+    int16_t dy =
+        abs(
+            joystick.y -
+            previous_joystick.y
+        );
+
+
+    bool position_changed =
+        dx >= JOYSTICK_REDRAW_THRESHOLD ||
+        dy >= JOYSTICK_REDRAW_THRESHOLD;
+
+    bool direction_changed =
+        direction != previous_direction;
+
+
+    if (position_changed || direction_changed)
+    {
+        menu_draw_joystick_values(
+            joystick,
+            direction
+        );
+
+        previous_joystick = joystick;
+    }
 }
 
 
@@ -152,55 +460,27 @@ void menu_update(uint8_t adc_values[4])
     joystick_direction_t direction =
         joystick_get_direction(joystick);
 
-    bool button = joystick_button_pressed();
+    bool button =
+        joystick_button_pressed();
 
     bool button_pressed =
         button && !previous_button;
 
 
-    /* -------------------------
+    /* =========================
        BUTTON
-       ------------------------- */
+       ========================= */
 
     if (button_pressed)
     {
-        /* We are in the main menu -> enter page */
         if (current_page == page_menu)
         {
-            switch (menu_index)
-            {
-                case 0:
-                    current_page = page_joystick;
-
-                    OLED_Clear();
-
-                    menu_draw_joystick_page(
-                        joystick,
-                        direction
-                    );
-                    break;
-
-
-                case 1:
-                    current_page = page_wasted;
-
-                    menu_draw_wasted_page();
-                    break;
-
-
-                case 2:
-                    current_page = page_image;
-
-                    menu_draw_image_page();
-                    break;
-
-
-                default:
-                    break;
-            }
+            menu_open_selected_page(
+                joystick,
+                direction
+            );
         }
 
-        /* We are inside a page -> go back */
         else
         {
             current_page = page_menu;
@@ -208,53 +488,33 @@ void menu_update(uint8_t adc_values[4])
             menu_draw_main();
         }
 
-        /*
-         * Return here so the same button press
-         * cannot do anything else this cycle.
-         */
+
         previous_button = button;
         previous_direction = direction;
+        previous_joystick = joystick;
 
         return;
     }
 
 
-    /* -------------------------
+    /* =========================
        CURRENT PAGE
-       ------------------------- */
+       ========================= */
 
     switch (current_page)
     {
         case page_menu:
 
-            /*
-             * Only react when the joystick
-             * changes direction.
-             */
-            if (direction != previous_direction)
-            {
-                if (direction == UP && menu_index > 0)
-                {
-                    menu_index--;
-                    menu_draw_main();
-                }
-
-                else if (direction == DOWN && menu_index < 2)
-                {
-                    menu_index++;
-                    menu_draw_main();
-                }
-            }
+            menu_handle_navigation(
+                direction
+            );
 
             break;
 
 
         case page_joystick:
 
-            /*
-             * Continuously update values.
-             */
-            menu_draw_joystick_page(
+            menu_update_joystick_page(
                 joystick,
                 direction
             );
@@ -265,8 +525,7 @@ void menu_update(uint8_t adc_values[4])
         case page_wasted:
 
             /*
-             * Nothing to update.
-             * Image was drawn when page opened.
+             * Static page.
              */
             break;
 
@@ -274,13 +533,16 @@ void menu_update(uint8_t adc_values[4])
         case page_image:
 
             /*
-             * Nothing to update.
-             * Image was drawn when page opened.
+             * Static page.
              */
             break;
 
 
         default:
+            current_page = page_menu;
+
+            menu_draw_main();
+
             break;
     }
 
