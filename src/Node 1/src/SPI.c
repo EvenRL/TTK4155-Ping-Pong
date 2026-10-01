@@ -1,22 +1,34 @@
 #include "SPI.h"
 
+#define OLED_SS_DDR  DDRB
+#define OLED_SS_PORT PORTB
+#define OLED_SS_PIN  PB3
+
+#define MCP2515_SS_DDR  DDRB
+#define MCP2515_SS_PORT PORTB
+#define MCP2515_SS_PIN  PB4
+
 // =========================================================
 //                          SPI MASTER
 // =========================================================
 
 void SPI_MasterInit(void)
 {
-    DDRB |= (1 << DDB4)
-          | (1 << DDB5)
-          | (1 << DDB7);
+    DDRB |= (1 << OLED_SS_PIN) // OLED CS/SS
+          | (1 << MCP2515_SS_PIN) // MCP2515 CS/SS
+          | (1 << DDB5) // MOSI
+          | (1 << DDB7); // SCK
 
-    DDRB &= ~(1 << DDB6);
+    DDRB &= ~(1 << DDB6); // MISO
 
-    PORTB |= (1 << PB4);
+    oled_deselect();
+    mcp2515_deselect();
 
-    SPCR = (1 << SPE)
-         | (1 << MSTR)
-         | (1 << SPR0);
+    SPCR = (1 << SPE) // Enable SPI
+         | (1 << MSTR) // Set as Master
+         | (1 << SPR0); // Set clock rate
+
+
 }
 
 uint8_t SPI_MasterTransmit(uint8_t data)
@@ -30,21 +42,38 @@ uint8_t SPI_MasterTransmit(uint8_t data)
     return SPDR;
 }
 
+uint8_t SPI_MasterReceive(void)
+{
+    return SPI_MasterTransmit(0x00);
+}
+
 
 // =========================================================
 //                       OLED SELECT
 // =========================================================
 
-#define OLED_SS_DDR  DDRB
-#define OLED_SS_PORT PORTB
-#define OLED_SS_PIN  PB3
-
 void oled_select(void)
 {
+    mcp2515_deselect();
     OLED_SS_PORT &= ~(1 << OLED_SS_PIN);
 }
 
 void oled_deselect(void)
 {
     OLED_SS_PORT |= (1 << OLED_SS_PIN);
+}
+
+// =========================================================
+//                       MCP2515 SELECT
+// =========================================================
+
+void mcp2515_select(void)
+{
+    oled_deselect();
+    MCP2515_SS_PORT &= ~(1 << MCP2515_SS_PIN);
+}
+
+void mcp2515_deselect(void)
+{
+    MCP2515_SS_PORT |= (1 << MCP2515_SS_PIN);
 }
