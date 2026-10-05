@@ -76,4 +76,17 @@ void mcp2515_select(void)
 void mcp2515_deselect(void)
 {
     MCP2515_SS_PORT |= (1 << MCP2515_SS_PIN);
+
+// =========================================================
+//                     IO BOARD SELECT
+// =========================================================
+
+void io_select(void)
+{
+    PORTB &= ~(1 << PB4);
+}
+
+void io_deselect(void)
+{
+    PORTB |= (1 << PB4);
 }

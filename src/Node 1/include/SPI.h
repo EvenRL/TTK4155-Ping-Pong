@@ -13,5 +13,7 @@ void oled_deselect(void);
 
 void mcp2515_select(void);
 void mcp2515_deselect(void);
+void io_select(void);
+void io_deselect(void);
 
 #endif

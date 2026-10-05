@@ -10,7 +10,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdbool.h>
-
+#include "io.h"
 #include "usart.h"
 #include "sram.h"
 #include "joysticktouch.h"
@@ -27,6 +27,9 @@ int main(void)
 	usart_init_printf();
 	
 	sei();
+
+	bool previous_r6 = false;
+	bool led_on = false;
 	
 	xmem_init();
 	adc_init();
@@ -48,6 +51,7 @@ int main(void)
 	OLED_Init();
 	OLED_Clear();
 	joystick_button_init();
+	IO_SetLED(0, false);
 	can_init(MCP_MODE_LOOPBACK);
 
 	menu_init();
@@ -59,8 +63,20 @@ int main(void)
 	uint8_t data[8] = {0};
 
 	while (1)
+{
+    // Read ADC once
+    adc_read(adc_values);
+
+	bool r6 = IO_R6_Pressed();
+
+	if (r6 && !previous_r6)
 	{
-		adc_read(adc_values);
+		led_on = !led_on;
+
+		IO_SetLED(0, led_on);
+	}
+
+	previous_r6 = r6;
 
 		menu_update(adc_values);
 
