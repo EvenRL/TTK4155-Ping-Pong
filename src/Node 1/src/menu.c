@@ -282,7 +282,7 @@ static void menu_draw_image_page(void)
             /*
              * Delay between animation frames.
              */
-            _delay_ms(900);
+            _delay_ms(700);
 
             /*
              * Check BACK button between every frame.
