@@ -6,10 +6,13 @@
 
 void SPI_MasterInit(void);
 uint8_t SPI_MasterTransmit(uint8_t data);
+uint8_t SPI_MasterReceive(void);
 
 void oled_select(void);
 void oled_deselect(void);
 
+void mcp2515_select(void);
+void mcp2515_deselect(void);
 void io_select(void);
 void io_deselect(void);
 

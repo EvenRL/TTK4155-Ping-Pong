@@ -11,7 +11,6 @@
 void OLED_Init(void)
 {
     DDRB |= (1 << DDB1); // D/C
-    DDRB |= (1 << DDB3); // OLED CS
 
     PORTB |= (1 << PB3); // deselect OLED
 
