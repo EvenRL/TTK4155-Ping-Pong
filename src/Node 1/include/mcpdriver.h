@@ -22,7 +22,11 @@ enum mcp_registers {
     MCP_TXB1CTRL = 0x40,
     MCP_TXB2CTRL = 0x50,
     MCP_RXB0CTRL = 0x60,
-    MCP_RXB1CTRL = 0x70
+    MCP_RXB1CTRL = 0x70,
+    MCP_TXB0SIDH = 0x31,
+    MCP_TXB0DLC  = 0x35,
+    MCP_RXB0SIDH = 0x61,
+    MCP_RXB1SIDH = 0x71,
 };
 
 enum mcp_command {
