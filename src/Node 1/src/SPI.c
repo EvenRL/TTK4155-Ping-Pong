@@ -16,6 +16,7 @@ void SPI_MasterInit(void)
 {
     DDRB |= (1 << OLED_SS_PIN) // OLED CS/SS
           | (1 << MCP2515_SS_PIN) // MCP2515 CS/SS
+          | (1 << DDB4) // SS
           | (1 << DDB5) // MOSI
           | (1 << DDB7); // SCK
 
@@ -23,6 +24,7 @@ void SPI_MasterInit(void)
 
     oled_deselect();
     mcp2515_deselect();
+    io_deselect();
 
     SPCR = (1 << SPE) // Enable SPI
          | (1 << MSTR) // Set as Master
@@ -77,6 +79,7 @@ void mcp2515_deselect(void)
 {
     MCP2515_SS_PORT |= (1 << MCP2515_SS_PIN);
 
+}
 // =========================================================
 //                     IO BOARD SELECT
 // =========================================================
