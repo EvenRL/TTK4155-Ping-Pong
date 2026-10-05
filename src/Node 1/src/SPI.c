@@ -48,3 +48,18 @@ void oled_deselect(void)
 {
     OLED_SS_PORT |= (1 << OLED_SS_PIN);
 }
+
+
+// =========================================================
+//                     IO BOARD SELECT
+// =========================================================
+
+void io_select(void)
+{
+    PORTB &= ~(1 << PB4);
+}
+
+void io_deselect(void)
+{
+    PORTB |= (1 << PB4);
+}

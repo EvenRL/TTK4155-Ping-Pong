@@ -10,4 +10,7 @@ uint8_t SPI_MasterTransmit(uint8_t data);
 void oled_select(void);
 void oled_deselect(void);
 
+void io_select(void);
+void io_deselect(void);
+
 #endif
