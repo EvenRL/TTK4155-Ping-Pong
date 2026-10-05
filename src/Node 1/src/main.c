@@ -18,6 +18,7 @@
 #include "oled.h"
 #include "graphics.h"
 #include "menu.h"
+#include "can.h"
 
 int main(void)
 {
@@ -47,33 +48,49 @@ int main(void)
 	OLED_Init();
 	OLED_Clear();
 	joystick_button_init();
+	can_init(MCP_MODE_LOOPBACK);
 
 	menu_init();
+	
+	uint8_t message[8] = {9, 9, 9, 9, 9, 9, 9, 9};
 
+	uint32_t rx_id = 0;
+	uint8_t rx_length = 0;
+	uint8_t data[8] = {0};
 
 	while (1)
-{
-    // Read ADC once
-    adc_read(adc_values);
+	{
+		adc_read(adc_values);
 
-    // Calculate everything from the same ADC reading
-    // joystick_position_t joystick =
-    //     joystick_get_position(adc_values);
+		menu_update(adc_values);
 
-    // joystick_direction_t direction =
-    //     joystick_get_direction(joystick);
+		if (can_send_message(0x123, message, 8))
+		{
+			printf("Sent message\n");
+		}
+		else
+		{
+			printf("Send failed\n");
+		}
 
-    // touch_position_t touch =
-    //     touch_get_position(adc_values);
+		if (can_receive_message(&rx_id, data, &rx_length))
+		{
+			printf("Received ID: 0x%03lX data: ", rx_id);
 
-    // Update OLED/menu
-    menu_update(adc_values);
+			for (uint8_t i = 0; i < rx_length; i++)
+			{
+				printf("%d ", data[i]);
+			}
 
-    // Display values in PuTTY
-    //display_joystick(joystick, direction, touch);
+			printf("\n");
+		}
+		else
+		{
+			printf("No message received\n");
+		}
 
-    _delay_ms(100);
-}
+		_delay_ms(100);
+	}
 } 
 
 

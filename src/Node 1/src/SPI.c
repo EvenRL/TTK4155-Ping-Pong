@@ -6,7 +6,7 @@
 
 #define MCP2515_SS_DDR  DDRB
 #define MCP2515_SS_PORT PORTB
-#define MCP2515_SS_PIN  PB4
+#define MCP2515_SS_PIN  PB2
 
 // =========================================================
 //                          SPI MASTER

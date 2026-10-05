@@ -44,6 +44,8 @@ bool can_init(enum mcp_modes mode)
         // Handle MCP2515 initialization failure
         printf("MCP2515 initialization failed. Please check the connections and try again.\n");
         return false;
+    } else {
+        printf("MCP2515 initialized successfully in mode %d.\n", mode);
     }
     
     return true;
