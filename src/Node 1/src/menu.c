@@ -235,7 +235,7 @@ static void menu_draw_wasted_page(void)
 static void menu_draw_image_page(void)
 {
     static const uint8_t animation_sequence[] = {
-        0, 1, 2, 3, 4, 3, 2, 1
+        0, 1, 2, 3, 4
     };
 
     const uint8_t sequence_length =

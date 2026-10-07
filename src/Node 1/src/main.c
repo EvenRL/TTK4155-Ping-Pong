@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdbool.h>
+
 #include "io.h"
 #include "usart.h"
 #include "sram.h"
@@ -52,7 +53,12 @@ int main(void)
 	OLED_Clear();
 	joystick_button_init();
 	IO_SetLED(0, false);
-	can_init(MCP_MODE_LOOPBACK);
+
+	// Dersom CAN ikke initialiseres, vil ikke programmet fortsette.
+	// Bare for å sikre at vi ikke prøver å sende meldinger når CAN ikke er initialisert.
+	if (!can_init(MCP_MODE_LOOPBACK)) {
+		printf("Failed to initialize CAN controller.\n");
+	}
 
 	menu_init();
 	
@@ -105,7 +111,7 @@ int main(void)
 			printf("No message received\n");
 		}
 
-		_delay_ms(100);
+		_delay_ms(1000);
 	}
 } 
 

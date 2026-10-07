@@ -15,8 +15,8 @@ bool can_init(enum mcp_modes mode)
     uint8_t cnf2 = 0xA5;
     uint8_t cnf3 = 0x03; 
 
-    uint8_t rxb0cntrl = 0x64; // Accept all valid standard and extended messages, with rollover to RXB1
-    uint8_t rxb1cntrl = 0x60; // Accept all valid standard and extended messages
+    uint8_t rxb0cntrl = 0x64; // Turn masks/filters off; receive any message, with rollover to RXB1
+    uint8_t rxb1cntrl = 0x60; // Turn masks/filters off; receive any message
 
     uint8_t interrupt_flags = 0x00; // Clear interrupt flags
 
@@ -38,7 +38,8 @@ bool can_init(enum mcp_modes mode)
 
     mcp_write(MCP_CANINTE, &interrupts, 1);
 
-    mcp_write(MCP_CANCTRL, &requested_mode, 1); // Set the MCP2515 mode (e.g., normal, sleep, loopback)
+    // Tror denne er unødvendig, da can_set_mode allerede setter modusen
+    // mcp_write(MCP_CANCTRL, &requested_mode, 1); // Set the MCP2515 mode (e.g., normal, sleep, loopback)
 
     if (!can_set_mode(mode)) {
         // Handle MCP2515 initialization failure

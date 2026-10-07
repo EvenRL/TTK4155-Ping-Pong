@@ -8,6 +8,10 @@
 #define MCP2515_SS_PORT PORTB
 #define MCP2515_SS_PIN  PB2
 
+#define IO_SS_DDR  DDRB
+#define IO_SS_PORT PORTB
+#define IO_SS_PIN  PB4
+
 // =========================================================
 //                          SPI MASTER
 // =========================================================
@@ -16,7 +20,7 @@ void SPI_MasterInit(void)
 {
     DDRB |= (1 << OLED_SS_PIN) // OLED CS/SS
           | (1 << MCP2515_SS_PIN) // MCP2515 CS/SS
-          | (1 << DDB4) // SS
+          | (1 << IO_SS_PIN) // IO CS/SS
           | (1 << DDB5) // MOSI
           | (1 << DDB7); // SCK
 
@@ -57,6 +61,8 @@ uint8_t SPI_MasterReceive(void)
 void oled_select(void)
 {
     mcp2515_deselect();
+    io_deselect();
+
     OLED_SS_PORT &= ~(1 << OLED_SS_PIN);
 }
 
@@ -72,6 +78,8 @@ void oled_deselect(void)
 void mcp2515_select(void)
 {
     oled_deselect();
+    io_deselect();
+
     MCP2515_SS_PORT &= ~(1 << MCP2515_SS_PIN);
 }
 
@@ -86,10 +94,13 @@ void mcp2515_deselect(void)
 
 void io_select(void)
 {
-    PORTB &= ~(1 << PB4);
+    oled_deselect();
+    mcp2515_deselect();
+
+    IO_SS_PORT &= ~(1 << IO_SS_PIN);
 }
 
 void io_deselect(void)
 {
-    PORTB |= (1 << PB4);
+    IO_SS_PORT |= (1 << IO_SS_PIN);
 }
