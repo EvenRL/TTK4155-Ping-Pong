@@ -1,10 +1,20 @@
 
 #include "can.h"
 #include "mcpdriver.h"
+#include <avr/io.h>
+#include <avr/interrupt.h>
 #include <util/delay.h>
 #include <stdio.h>
+#include <util/atomic.h>
 
 static bool can_set_mode(enum mcp_modes mode);
+static volatile uint8_t can_rx_pending = 0;
+
+// Interrupt routine for INT0
+ISR(INT0_vect)
+{
+    can_rx_pending = 1; // Set the flag to indicate a message is pending
+}
 
 bool can_init(enum mcp_modes mode)
 {
@@ -20,8 +30,7 @@ bool can_init(enum mcp_modes mode)
 
     uint8_t interrupt_flags = 0x00; // Clear interrupt flags
 
-    uint8_t interrupts = 0x03; // Enable interrupts for both recieve buffers RX0 and RX1
-    uint8_t requested_mode = mode;
+    uint8_t interrupts = 0x03; // Enable interrupts for both receive buffers RX0 and RX1
 
     mcp_reset();
     _delay_ms(1);
@@ -36,8 +45,6 @@ bool can_init(enum mcp_modes mode)
 
     mcp_write(MCP_CANINTF, &interrupt_flags, 1);
 
-    mcp_write(MCP_CANINTE, &interrupts, 1);
-
     // Tror denne er unødvendig, da can_set_mode allerede setter modusen
     // mcp_write(MCP_CANCTRL, &requested_mode, 1); // Set the MCP2515 mode (e.g., normal, sleep, loopback)
 
@@ -45,11 +52,33 @@ bool can_init(enum mcp_modes mode)
         // Handle MCP2515 initialization failure
         printf("MCP2515 initialization failed. Please check the connections and try again.\n");
         return false;
-    } else {
-        printf("MCP2515 initialized successfully in mode %d.\n", mode);
     }
-    
+
+    printf("MCP2515 initialized successfully in mode %d.\n", mode);
+
+    // Interrupt configuration for INT0 (PD2)
+    DDRD &= ~_BV(PD2);  // PD2 input
+    PORTD |= _BV(PD2);  // Enable pull-up
+
+    MCUCR = (MCUCR & ~(_BV(ISC01) | _BV(ISC00))) | _BV(ISC01); // Falling edge
+    GIFR = _BV(INTF0);  // Clear any pending INT0
+    GICR |= _BV(INT0);  // Enable INT0
+
+    mcp_write(MCP_CANINTE, &interrupts, 1);
+
     return true;
+}
+
+bool can_take_rx_pending(void)
+{
+    bool pending;
+
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        pending = can_rx_pending != 0;
+        can_rx_pending = 0;
+    }
+
+    return pending;
 }
 
 static bool can_set_mode(enum mcp_modes mode)

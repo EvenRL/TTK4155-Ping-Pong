@@ -95,25 +95,23 @@ int main(void)
 			printf("Send failed\n");
 		}
 
-		if (can_receive_message(&rx_id, data, &rx_length))
+		while (can_take_rx_pending())
 		{
-			printf("Received ID: 0x%03lX data: ", rx_id);
-
-			for (uint8_t i = 0; i < rx_length; i++)
+			while (can_receive_message(&rx_id, data, &rx_length))
 			{
-				printf("%d ", data[i]);
-			}
+				printf("Received ID: 0x%03lX data: ", rx_id);
 
-			printf("\n");
-		}
-		else
-		{
-			printf("No message received\n");
+				for (uint8_t i = 0; i < rx_length; i++)
+				{
+					printf("%d ", data[i]);
+				}
+
+				printf("\n");
+			}
 		}
 
 		_delay_ms(1000);
 	}
 } 
-
 
 
