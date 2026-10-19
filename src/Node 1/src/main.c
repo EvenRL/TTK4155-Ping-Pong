@@ -56,7 +56,7 @@ int main(void)
 
 	// Dersom CAN ikke initialiseres, vil ikke programmet fortsette.
 	// Bare for å sikre at vi ikke prøver å sende meldinger når CAN ikke er initialisert.
-	if (!can_init(MCP_MODE_LOOPBACK)) {
+	if (!can_init(MCP_MODE_NORMAL)) {
 		printf("Failed to initialize CAN controller.\n");
 	}
 
@@ -86,14 +86,14 @@ int main(void)
 
 		menu_update(adc_values);
 
-		if (can_send_message(0x123, message, 8))
-		{
-			printf("Sent message\n");
-		}
-		else
-		{
-			printf("Send failed\n");
-		}
+		// if (can_send_message(0x123, message, 8))
+		// {
+		// 	printf("Sent message\n");
+		// }
+		// else
+		// {
+		// 	printf("Send failed\n");
+		// }
 
 		while (can_take_rx_pending())
 		{
