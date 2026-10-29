@@ -85,15 +85,25 @@ int main(void)
 	previous_r6 = r6;
 
 		menu_update(adc_values);
+		
+		// Get joystick position
+		joystick_position_t joystick = joystick_get_position(adc_values);
 
-		// if (can_send_message(0x123, message, 8))
-		// {
-		// 	printf("Sent message\n");
-		// }
-		// else
-		// {
-		// 	printf("Send failed\n");
-		// }
+		// Create CAN message with joystick position
+		uint8_t message[2] = {
+			(uint8_t)joystick.x,
+			(uint8_t)joystick.y
+		};
+
+		// Send joystick position over CAN
+		if (can_send_message(0x03FC0000, message, 2))
+		{
+			printf("Joystick sent: X=%d, Y=%d\n", joystick.x, joystick.y);
+		}
+		else
+		{
+			printf("CAN send failed\n");
+		}
 
 		while (can_take_rx_pending())
 		{
@@ -110,7 +120,7 @@ int main(void)
 			}
 		}
 
-		_delay_ms(1000);
+		_delay_ms(100);
 	}
 } 
 

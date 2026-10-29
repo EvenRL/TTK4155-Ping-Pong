@@ -100,7 +100,7 @@ bool can_send_message(uint32_t id, const uint8_t* data, uint8_t length)
     uint8_t frame[13];
 
     // This implementation supports standard 11-bit CAN identifiers only.
-    if (id > 0x7FF || data == NULL || length > 8) {
+    if (id > 0x7FFFFFFF || data == NULL || length > 8) {
         return false;
     }
 
@@ -110,11 +110,16 @@ bool can_send_message(uint32_t id, const uint8_t* data, uint8_t length)
         return false; // TXB0 is still transmitting
     }
 
-    frame[0] = (uint8_t)(id >> 3);          // SIDH: ID bits 10..3
-    frame[1] = (uint8_t)((id & 0x07) << 5); // SIDL: ID bits 2..0
-    frame[2] = 0x00;                        // EID8
-    frame[3] = 0x00;                        // EID0
-    frame[4] = length;                      // DLC
+    // frame[0] = (uint8_t)(id >> 21);          // SIDH: ID bits 10..3
+    // frame[1] = (uint8_t)((id & 0x07) << 5); // SIDL: ID bits 2..0
+    // frame[2] = 0x00;                        // EID8
+    // frame[3] = 0x00;                        // EID0
+    // frame[4] = length;                      // DLC
+    frame[0] = (uint8_t)(id >> 21);                   
+    frame[1] = (uint8_t)(((id >> 13) & 0xE0) | ((id >> 16) & 0x03) | 0x08);
+    frame[2] = (uint8_t)(id >> 8);
+    frame[3] = (uint8_t)id;
+    frame[4] = length;
 
     for (uint8_t i = 0; i < length; i++) {
         frame[5 + i] = data[i];
@@ -156,10 +161,10 @@ bool can_receive_message(uint32_t* id, uint8_t* data, uint8_t* length)
     mcp_read(buffer_address, frame, sizeof(frame));
 
     // This API currently supports standard 11-bit frames only.
-    if ((frame[1] & 0x08) != 0) {
-        mcp_bit_modify(MCP_CANINTF, interrupt_mask, 0x00);
-        return false;
-    }
+    // if ((frame[1] & 0x08) != 0) {
+    //     mcp_bit_modify(MCP_CANINTF, interrupt_mask, 0x00);
+    //     return false;
+    // }
 
     frame_length = frame[4] & 0x0F;
     if (frame_length > 8) {
@@ -167,7 +172,18 @@ bool can_receive_message(uint32_t* id, uint8_t* data, uint8_t* length)
         return false;
     }
 
-    *id = ((uint32_t)frame[0] << 3) | ((uint32_t)frame[1] >> 5);
+    if (frame[1] & 0x08) {
+    // Extended CAN frame (29-bit ID)
+    *id = ((uint32_t)frame[0] << 21) |
+          ((uint32_t)(frame[1] & 0xE0) << 13) |
+          ((uint32_t)(frame[1] & 0x03) << 16) |
+          ((uint32_t)frame[2] << 8) |
+          frame[3];
+    } else {
+        // Standard CAN frame (11-bit ID)
+        *id = ((uint32_t)frame[0] << 3) |
+            ((uint32_t)frame[1] >> 5);
+    }
     *length = frame_length;
 
     for (uint8_t i = 0; i < frame_length; i++) {
