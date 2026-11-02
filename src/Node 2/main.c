@@ -11,7 +11,7 @@ int main()
     SystemInit();
 
     uart_init(FCPU, 115200); // Initialize UART with baud rate 115200
-
+    printf("Hello, World!\r\n");
     can_init((CanInit){.phase2=3, .propag=4, .phase1=3, .sjw=0, .brp=11, .smp=0}, 0); // Initialize CAN
 
     WDT->WDT_MR = WDT_MR_WDDIS; //Disable Watchdog Timer
