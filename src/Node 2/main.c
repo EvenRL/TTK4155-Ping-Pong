@@ -101,6 +101,9 @@ int main()
         {
             if (rx_msg.id == 0xFF && rx_msg.length == 2)
             {
+                // Read joystick position
+                int8_t joystick_y = (int8_t)rx_msg.byte[0];
+                int8_t touch_y = (int8_t)rx_msg.byte[1];
                 int8_t x = (int8_t)rx_msg.byte[0];
                 int8_t y = (int8_t)rx_msg.byte[1];
 
