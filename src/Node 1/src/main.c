@@ -88,11 +88,14 @@ int main(void)
 		
 		// Get joystick position
 		joystick_position_t joystick = joystick_get_position(adc_values);
+		touch_position_t touch = touch_get_position(adc_values);
+
+		int8_t servo_control = (int_8_t)(((int32_t)touch.y * 200) / 255 - 100);
 
 		// Create CAN message with joystick position
 		uint8_t message[2] = {
 			(uint8_t)joystick.x,
-			(uint8_t)joystick.y
+			(uint8_t)servo_control
 		};
 
 		// Send joystick position over CAN
