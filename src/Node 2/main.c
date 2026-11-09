@@ -50,14 +50,14 @@ int main()
             if (rx_msg.id == 0xFF && rx_msg.length == 2)
             {
                 // Read joystick position
-                int8_t x = (int8_t)rx_msg.byte[0];
-                int8_t y = (int8_t)rx_msg.byte[1];
+                int8_t joystick_y = (int8_t)rx_msg.byte[0];
+                int8_t touch_y = (int8_t)rx_msg.byte[1];
 
                 // Convert joystick Y to PWM
-                uint16_t pulse_width = pwm_set_control(y);
+                uint16_t pulse_width = pwm_set_control(touch_y);
 
                 // Debug
-                printf("X: %d, Y: %d, PWM: %u us\r\n", x, y, pulse_width);
+                printf("Joystick Y: %d, Touch Y: %d, PWM: %u us\r\n", joystick_y, touch_y, pulse_width);
             }
         }
 
