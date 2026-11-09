@@ -1,3 +1,10 @@
 {
-    "cmake.sourceDirectory": "/home/gruppe35/TTK4155-Ping-Pong/src/Node 1/cmake/Node_1/default"
+    "cmake.sourceDirectory": "/home/gruppe35/TTK4155-Ping-Pong/src/Node 1/cmake/Node_1/default",
+    "memory-inspector.debugTypes": [
+        "arm-debugger",
+        "embedded-debug",
+        "gdb",
+        "gdbtarget",
+        "mplab-core-da"
+    ]
 }
