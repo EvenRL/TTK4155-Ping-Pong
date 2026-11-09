@@ -9,6 +9,7 @@
 #include "encoder.h"
 #include "controller.h"
 #include "time.h"
+#include "solenoid.h"
 
 #define FCPU 84000000 // CPU frequency in Hz
 
@@ -20,9 +21,6 @@ int main()
 
     PMC->PMC_PCER0 = 1u << ID_PIOB;  // Enable PIOB clock
 
-    PIOB->PIO_PER = PIO_PB25;        // Assign PB25 to PIO
-    PIOB->PIO_OER = PIO_PB25;        // Configure as output
-
     uart_init(FCPU, 115200); // Initialize UART with baud rate 115200
     
     can_init((CanInit){.phase2=3, .propag=4, .phase1=3, .sjw=0, .brp=11, .smp=0}, 0); // Initialize CAN
@@ -33,14 +31,17 @@ int main()
     pwm_set_pulse_width(2100); // Set initial pulse width to 1.5 ms
 
     ir_init(); // Initialize IR sensor
-    uint8_t goal_counter = 0; // Initialize goal counter
+    uint32_t goal_counter = 0; // Initialize goal counter
 
     encoder_init(); // Initialize encoder
     printf("Encoder initialized!\r\n");
 
     controller_init();
-    controller_set_limits(5610, 0); // Set encoder limits for the motor
+    controller_set_limits(5610, -5000); // Set encoder limits for the motor
     printf("Motor controller initialized!\r\n");
+
+    solenoid_init(); // Initialize solenoid
+    printf("Solenoid initialized!\r\n");
 
 //     while (1)
 //     {
@@ -95,27 +96,40 @@ int main()
     {
         // ---------------- CAN RECEIVE ----------------
 
+        solenoid_update(); 
         CanMsg rx_msg;
 
         if (can_rx(&rx_msg))
         {
-            if (rx_msg.id == 0xFF && rx_msg.length == 2)
+            if (rx_msg.id == 0xFF && rx_msg.length == 3)
             {
-                // Read joystick position
-                int8_t joystick_y = (int8_t)rx_msg.byte[0];
-                int8_t touch_y = (int8_t)rx_msg.byte[1];
+                // Read joystick and servo values
                 int8_t x = (int8_t)rx_msg.byte[0];
                 int8_t y = (int8_t)rx_msg.byte[1];
 
-                // Set desired motor position
+                // Read SR1 button
+                bool shoot_pressed = (rx_msg.byte[2] != 0);
+
+                // Motor position controller
                 controller_set_target(x);
 
-                // Control servo
+                // Servo control
                 pwm_set_control(y);
 
                 // Update CAN timestamp
                 last_can_rx = time_now();
                 can_active = true;
+
+                // Detect new SR1 button press
+                static bool previous_shoot = false;
+
+                if (shoot_pressed && !previous_shoot)
+                {
+                    solenoid_shoot();
+                    printf("SR1 press detected!\r\n");
+                }
+
+                previous_shoot = shoot_pressed;
             }
         }
 
@@ -147,7 +161,23 @@ int main()
 
         // ---------------- GOAL COUNTER ----------------
 
+        uint32_t previous_goals = goal_counter;
+
         check_goal(ir_value, 1500, &goal_counter);
+
+        if (goal_counter != previous_goals)
+        {
+            CanMsg goal_msg = {0};
+
+            goal_msg.id = 0x01;
+            goal_msg.length = 1;
+
+            // LED-visningen stopper på seks; selve telleren fortsetter
+            goal_msg.byte[0] =
+                (goal_counter >= 6) ? 6 : (uint8_t)goal_counter;
+
+            can_tx(goal_msg);
+        }
 
         // ---------------- DEBUG ----------------
 
@@ -159,7 +189,7 @@ int main()
                 (long)controller_get_target(),
                 (long)encoder_get_position());
 
-            printf("IR: %u, Goals: %u\r\n",
+            printf("IR: %u, Goals: %Lu\r\n",
                 ir_value, goal_counter);
         }
     }

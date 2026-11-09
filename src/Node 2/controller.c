@@ -10,7 +10,7 @@
 #define MOTOR_PHASE_PIN     PIO_PC23
 #define MOTOR_PWM_CHANNEL   0
 #define MOTOR_PWM_PERIOD    525
-#define MOTOR_REVERSED      0
+#define MOTOR_REVERSED      0 
 
 // ---------------- CONTROLLER CONFIGURATION ----------------
 
@@ -18,7 +18,7 @@
 #define JOYSTICK_DEADZONE   8
 
 #define TARGET_SPEED        4500.0f
-#define END_MARGIN          100.0f
+#define END_MARGIN          0.0f
 
 #define KP                  6.0f
 #define KI                  0.5f
@@ -313,12 +313,12 @@ void controller_update(void)
     // ---------------- ENDSTOP PROTECTION ----------------
 
     // Prevent driving beyond track limits
-    if ((actual <= low + END_MARGIN && output < 0.0f) ||
-        (actual >= high - END_MARGIN && output > 0.0f))
-    {
-        output = 0.0f;
-        integral = 0.0f;
-    }
+    // if ((actual <= low + END_MARGIN && output < 0.0f) ||
+    //     (actual >= high - END_MARGIN && output > 0.0f))
+    // {
+    //     output = 0.0f;
+    //     integral = 0.0f;
+    // }
 
     // ---------------- APPLY MOTOR OUTPUT ----------------
 

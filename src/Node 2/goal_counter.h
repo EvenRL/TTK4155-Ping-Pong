@@ -3,7 +3,10 @@
 
 #include <stdint.h>
 
-void check_goal(uint16_t ir_value, uint16_t threshold, uint8_t *goal_counter);
-
+void check_goal(
+    uint16_t ir_value,
+    uint16_t threshold,
+    uint32_t *goal_counter
+);
 
 #endif

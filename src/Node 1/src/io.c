@@ -5,6 +5,7 @@
 #define IO_LED_COMMAND     0x05
 
 #define R6_MASK            (1 << 5)
+#define R1_MASK            (1 << 0)
 
 
 // Read all buttons from IO board
@@ -37,6 +38,14 @@ bool IO_R6_Pressed(void)
     return (buttons.right & R6_MASK) != 0;
 }
 
+// Check whether SR1 is pressed
+bool IO_R1_Pressed(void)
+{
+    io_buttons_t buttons = IO_ReadButtons();
+
+    return (buttons.right & R1_MASK) != 0;
+}
+
 
 // Turn one of the six IO-board LEDs on/off
 void IO_SetLED(uint8_t led, bool on)
@@ -58,4 +67,12 @@ void IO_SetLED(uint8_t led, bool on)
     SPI_MasterTransmit(on ? 1 : 0);
 
     io_deselect();
+}
+
+void IO_ShowGoals(uint8_t goals)
+{
+    for (uint8_t led = 0; led < 6; led++)
+    {
+        IO_SetLED(led, led < goals);
+    }
 }
