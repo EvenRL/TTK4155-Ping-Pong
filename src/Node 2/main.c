@@ -91,10 +91,27 @@ int main()
     uint64_t last_debug = time_now();
 
     bool can_active = false;
+    goal_counter = 0;
+
+    CanMsg initial_goal_msg = {0};
+    initial_goal_msg.id = 0x01;
+    initial_goal_msg.length = 1;
+    initial_goal_msg.byte[0] = 0;
+
+    uint64_t startup_time = time_now();
+    bool initial_goal_sent = false;
 
     while (1)
     {
         // ---------------- CAN RECEIVE ----------------
+
+        uint64_t now = time_now();
+
+        if (!initial_goal_sent && now - startup_time >= msecs(5000))
+        {
+            can_tx(initial_goal_msg);
+            initial_goal_sent = true;
+        }
 
         solenoid_update(); 
         CanMsg rx_msg;
@@ -135,7 +152,7 @@ int main()
 
         // ---------------- PI CONTROLLER ----------------
 
-        uint64_t now = time_now();
+        now = time_now();
 
         // Update every 10 ms (100 Hz)
         if (now - last_control >= msecs(10))
