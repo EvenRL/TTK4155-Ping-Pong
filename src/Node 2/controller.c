@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-// ---------------- MOTOR CONFIGURATION ----------------
+// Motor configuration
 
 #define MOTOR_PWM_PIN       PIO_PB12
 #define MOTOR_PHASE_PIN     PIO_PC23
@@ -12,7 +12,7 @@
 #define MOTOR_PWM_PERIOD    525
 #define MOTOR_REVERSED      0 
 
-// ---------------- CONTROLLER CONFIGURATION ----------------
+// Controller configuration
 
 #define DT                  0.01f
 #define JOYSTICK_DEADZONE   8
@@ -24,7 +24,7 @@
 #define KI                  0.5f
 #define MAX_DUTY            0.40f
 
-// ---------------- VARIABLES ----------------
+// Variable declarations
 
 static int8_t joystick_command = 0;
 
@@ -38,7 +38,7 @@ static float integral = 0.0f;
 static bool limits_valid = false;
 
 
-// ---------------- HELPER FUNCTIONS ----------------
+// Helpers
 
 static float clampf(float x, float low, float high)
 {
@@ -49,10 +49,9 @@ static float clampf(float x, float low, float high)
 }
 
 
-// ---------------- MOTOR CONTROL ----------------
+// Motor
 
-// Positive output increases encoder position.
-// Negative output decreases encoder position.
+// OBS: Positive output increases encoder position, negative output decreases 
 
 static void motor_set_output(float output)
 {
@@ -88,7 +87,7 @@ static void motor_set_output(float output)
 }
 
 
-// ---------------- INITIALIZATION ----------------
+// Initialize motor controller
 
 void controller_init(void)
 {
@@ -136,7 +135,7 @@ void controller_init(void)
 }
 
 
-// ---------------- STOP MOTOR ----------------
+// Stop motor
 
 void controller_stop(void)
 {
@@ -150,7 +149,7 @@ void controller_stop(void)
 }
 
 
-// ---------------- SET POSITION LIMITS ----------------
+// Set position limits for the motor
 
 void controller_set_limits(int32_t left, int32_t right)
 {
@@ -171,7 +170,7 @@ void controller_set_limits(int32_t left, int32_t right)
 }
 
 
-// ---------------- JOYSTICK INPUT ----------------
+// Joystick input
 
 void controller_set_target(int8_t joystick_x)
 {
@@ -215,7 +214,7 @@ void controller_set_target(int8_t joystick_x)
 }
 
 
-// ---------------- PI CONTROLLER ----------------
+// PI controller
 
 void controller_update(void)
 {
@@ -260,7 +259,7 @@ void controller_update(void)
         return;
     }
 
-    // ---------------- UPDATE TARGET POSITION ----------------
+    // Update target position
 
     // Joystick controls how quickly the target moves
     target_position -=
@@ -275,13 +274,13 @@ void controller_update(void)
         high - END_MARGIN
     );
 
-    // ---------------- POSITION FEEDBACK ----------------
+    // Position feedback
 
     // Calculate normalized position error
     float error =
         (target_position - (float)actual) / travel;
 
-    // ---------------- PI REGULATOR ----------------
+    // PI regulator
 
     // Proportional term
     float P = KP * error;
@@ -310,23 +309,11 @@ void controller_update(void)
     // Limit motor power
     output = clampf(output, -MAX_DUTY, MAX_DUTY);
 
-    // ---------------- ENDSTOP PROTECTION ----------------
-
-    // Prevent driving beyond track limits
-    // if ((actual <= low + END_MARGIN && output < 0.0f) ||
-    //     (actual >= high - END_MARGIN && output > 0.0f))
-    // {
-    //     output = 0.0f;
-    //     integral = 0.0f;
-    // }
-
-    // ---------------- APPLY MOTOR OUTPUT ----------------
-
     motor_set_output(output);
 }
 
 
-// ---------------- DEBUG ----------------
+// debug
 
 int32_t controller_get_target(void)
 {

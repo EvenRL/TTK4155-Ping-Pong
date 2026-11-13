@@ -33,7 +33,7 @@ void check_goal(
 
     uint64_t now = time_now();
 
-    // ---------------- WAIT FOR CLEAR BEAM ----------------
+    // Wait for the IR beam to be clear before arming the goal detection
 
     if (!armed)
     {
@@ -58,7 +58,7 @@ void check_goal(
         return;
     }
 
-    // ---------------- DETECT BLOCKED BEAM ----------------
+    // Detect a goal when the IR beam is blocked for a certain duration
 
     if (ir_value <= low)
     {

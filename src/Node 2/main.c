@@ -103,10 +103,10 @@ int main()
 
     while (1)
     {
-        // ---------------- CAN RECEIVE ----------------
 
         uint64_t now = time_now();
 
+        // set initial goal counter to 0 after 5 seconds (to ensure that the other node has started and is ready to receive messages)
         if (!initial_goal_sent && now - startup_time >= msecs(5000))
         {
             can_tx(initial_goal_msg);
@@ -150,7 +150,7 @@ int main()
             }
         }
 
-        // ---------------- PI CONTROLLER ----------------
+        // PI controller:
 
         now = time_now();
 
@@ -172,11 +172,11 @@ int main()
             }
         }
 
-        // ---------------- IR SENSOR ----------------
+        // IR sensor:
 
         uint16_t ir_value = ir_read();
 
-        // ---------------- GOAL COUNTER ----------------
+        // Goal counter:
 
         uint32_t previous_goals = goal_counter;
 
@@ -189,14 +189,14 @@ int main()
             goal_msg.id = 0x01;
             goal_msg.length = 1;
 
-            // LED-visningen stopper på seks; selve telleren fortsetter
+            // LED-display on Node 1 will show 6 when goal_counter >= 6, otherwise it will show the actual goal_counter value
             goal_msg.byte[0] =
                 (goal_counter >= 6) ? 6 : (uint8_t)goal_counter;
 
             can_tx(goal_msg);
         }
 
-        // ---------------- DEBUG ----------------
+        // Debug:
 
         if (now - last_debug >= msecs(250))
         {

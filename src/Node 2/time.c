@@ -10,7 +10,7 @@ static uint64_t now = 0;
 __attribute__((constructor)) void time_init(void){
     // Clock calibration is set to '(num cycles for 1ms) / 8'
     // (SysTick is by default set to use 8x clock divisor)
-    calib = SysTick->CALIB * 8;
+    calib = SysTick->CALIB * 8; 
     // Set reload at calib-1 ticks 
 	SysTick->LOAD = (calib & SysTick_LOAD_RELOAD_Msk)-1;
     // Reset counter
