@@ -12,8 +12,11 @@ typedef struct
 } io_buttons_t;
 
 io_buttons_t IO_ReadButtons(void);
+
 bool IO_R6_Pressed(void);
+bool IO_R1_Pressed(void);
 
 void IO_SetLED(uint8_t led, bool on);
+void IO_ShowGoals(uint8_t goals);
 
 #endif

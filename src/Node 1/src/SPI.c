@@ -12,9 +12,7 @@
 #define IO_SS_PORT PORTB
 #define IO_SS_PIN  PB4
 
-// =========================================================
-//                          SPI MASTER
-// =========================================================
+// Initialize the SPI interface as a master
 
 void SPI_MasterInit(void)
 {
@@ -54,9 +52,7 @@ uint8_t SPI_MasterReceive(void)
 }
 
 
-// =========================================================
-//                       OLED SELECT
-// =========================================================
+// Oled select/deselect functions:
 
 void oled_select(void)
 {
@@ -71,9 +67,7 @@ void oled_deselect(void)
     OLED_SS_PORT |= (1 << OLED_SS_PIN);
 }
 
-// =========================================================
-//                       MCP2515 SELECT
-// =========================================================
+// MCP2515 select/deselect functions:
 
 void mcp2515_select(void)
 {
@@ -88,9 +82,7 @@ void mcp2515_deselect(void)
     MCP2515_SS_PORT |= (1 << MCP2515_SS_PIN);
 
 }
-// =========================================================
-//                     IO BOARD SELECT
-// =========================================================
+// IO select/deselect functions:
 
 void io_select(void)
 {

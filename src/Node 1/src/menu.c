@@ -21,9 +21,7 @@ typedef enum {
 } menu_page_t;
 
 
-/* =========================
-   STATE
-   ========================= */
+// State:
 
 static menu_page_t current_page = page_menu;
 
@@ -39,9 +37,7 @@ static joystick_position_t previous_joystick = {
 static bool previous_button = false;
 
 
-/* =========================
-   MENU ITEMS
-   ========================= */
+// Menu items:
 
 static const char *menu_items[MENU_ITEM_COUNT] = {
     "Joystick",
@@ -50,9 +46,7 @@ static const char *menu_items[MENU_ITEM_COUNT] = {
 };
 
 
-/* =========================
-   HELPERS
-   ========================= */
+// Helper functions:
 
 static const char *direction_to_string(
     joystick_direction_t direction)
@@ -77,17 +71,13 @@ static const char *direction_to_string(
 }
 
 
-/* =========================
-   MAIN MENU
-   ========================= */
+// Main menu drawing function:
 
 static void menu_draw_main(void)
 {
     OLED_Clear();
 
-    /*
-     * Normal display mode.
-     */
+    // Normal display mode (not inverted)
     OLED_WriteCommand(0xA6);
 
     OLED_Pos(0, 2);
@@ -115,10 +105,7 @@ static void menu_draw_main(void)
     OLED_Print("UP/DOWN  BTN=SELECT");
 }
 
-
-/* =========================
-   JOYSTICK PAGE
-   ========================= */
+// Joystick page
 
 static void menu_draw_joystick_static(void)
 {
@@ -197,9 +184,7 @@ static void menu_open_joystick(
 }
 
 
-/* =========================
-   WASTED PAGE
-   ========================= */
+// WASTED page
 
 static void menu_draw_wasted_page(void)
 {
@@ -228,9 +213,7 @@ static void menu_draw_wasted_page(void)
 }
 
 
-/* =========================
-   IMAGE PAGE
-   ========================= */
+// Image page
 
 static void menu_draw_image_page(void)
 {
@@ -242,18 +225,13 @@ static void menu_draw_image_page(void)
         sizeof(animation_sequence) /
         sizeof(animation_sequence[0]);
 
-    /*
-     * Wait for the button used to ENTER this page
-     * to be released.
-     */
+    // wait for button release before starting animation
     while (joystick_button_pressed())
     {
         _delay_ms(10);
     }
 
-    /*
-     * Keep animating until the button is pressed again.
-     */
+    // Keep displaying frames until the BACK button is pressed
     while (!joystick_button_pressed())
     {
         for (uint8_t i = 0; i < sequence_length; i++)
@@ -279,14 +257,8 @@ static void menu_draw_image_page(void)
                 }
             }
 
-            /*
-             * Delay between animation frames.
-             */
             _delay_ms(700);
 
-            /*
-             * Check BACK button between every frame.
-             */
             if (joystick_button_pressed())
             {
                 break;
@@ -294,9 +266,7 @@ static void menu_draw_image_page(void)
         }
     }
 
-    /*
-     * Wait for BACK button release.
-     */
+    // wait for button release before returning to menu
     while (joystick_button_pressed())
     {
         _delay_ms(10);
@@ -307,9 +277,7 @@ static void menu_draw_image_page(void)
 }
 
 
-/* =========================
-   PAGE OPENING
-   ========================= */
+// page selection
 
 static void menu_open_selected_page(
     joystick_position_t joystick,
@@ -347,9 +315,7 @@ static void menu_open_selected_page(
 }
 
 
-/* =========================
-   INIT
-   ========================= */
+// Init
 
 void menu_init(void)
 {
@@ -368,17 +334,12 @@ void menu_init(void)
 }
 
 
-/* =========================
-   MENU INPUT
-   ========================= */
+// Menu navigation
 
 static void menu_handle_navigation(
     joystick_direction_t direction)
 {
-    /*
-     * Require the joystick to return to neutral
-     * before accepting another menu movement.
-     */
+    // If the previous direction was not NEUTRAL, we ignore the current direction
     if (previous_direction != NEUTRAL)
     {
         return;
@@ -407,9 +368,7 @@ static void menu_handle_navigation(
 }
 
 
-/* =========================
-   JOYSTICK UPDATE
-   ========================= */
+// joystick page update
 
 static void menu_update_joystick_page(
     joystick_position_t joystick,
@@ -448,9 +407,7 @@ static void menu_update_joystick_page(
 }
 
 
-/* =========================
-   MENU UPDATE
-   ========================= */
+// Menu update function
 
 void menu_update(uint8_t adc_values[4])
 {
@@ -467,9 +424,7 @@ void menu_update(uint8_t adc_values[4])
         button && !previous_button;
 
 
-    /* =========================
-       BUTTON
-       ========================= */
+    // Button:
 
     if (button_pressed)
     {
@@ -497,9 +452,7 @@ void menu_update(uint8_t adc_values[4])
     }
 
 
-    /* =========================
-       CURRENT PAGE
-       ========================= */
+    // Current page handling:
 
     switch (current_page)
     {
@@ -524,17 +477,13 @@ void menu_update(uint8_t adc_values[4])
 
         case page_wasted:
 
-            /*
-             * Static page.
-             */
+            // static page, no updates needed
             break;
 
 
         case page_image:
 
-            /*
-             * Static page.
-             */
+            // static page, no updates needed
             break;
 
 

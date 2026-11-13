@@ -25,8 +25,6 @@ void OLED_Init(void)
 void OLED_Reset(void)
 {
     // Reset sequence for the OLED
-    // This is a placeholder; actual reset may require toggling a reset pin
-    // If your OLED has a reset pin, you should implement the reset logic here
     OLED_WriteCommand(0xAE); // Display off
     OLED_Clear();
     OLED_Home();
