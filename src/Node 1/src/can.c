@@ -96,7 +96,6 @@ bool can_send_message(uint32_t id, const uint8_t* data, uint8_t length)
     uint8_t tx_control;
     uint8_t frame[13];
 
-    // This implementation supports standard 11-bit CAN identifiers only.
     if (id > 0x7FFFFFFF || data == NULL || length > 8) {
         return false;
     }
