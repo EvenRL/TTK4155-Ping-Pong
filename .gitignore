@@ -64,7 +64,6 @@ dkms.conf
 build/
 dist/
 nbproject/
-Makefile*
 Package-*
 private/
 !cmake/**/user.cmake
