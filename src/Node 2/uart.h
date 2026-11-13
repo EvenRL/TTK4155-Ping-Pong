@@ -1,4 +1,6 @@
 
+// TTK4155 Handout
+
 // Initialize. Hooks stdio functions (like `printf`)
 void uart_init(uint32_t cpufreq, uint32_t baudrate);
 
