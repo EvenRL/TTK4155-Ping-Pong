@@ -125,7 +125,6 @@ int main(void)
 				{
 					IO_ShowGoals(data[0]);
 
-					if (data[0] >= 6)
 				}
 
 				printf("Received ID: 0x%03lX data: ", rx_id);
