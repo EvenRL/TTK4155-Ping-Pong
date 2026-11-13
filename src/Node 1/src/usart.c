@@ -5,19 +5,14 @@
 
 #define USART_RX_BUFFER_SIZE 32
 
-// =========================================================
-//                     RX BUFFER
-// =========================================================
-
+// RX Buffer:
 static volatile uint8_t rx_buffer[USART_RX_BUFFER_SIZE];
 
 static volatile uint8_t rx_head = 0;
 static volatile uint8_t rx_tail = 0;
 
 
-// =========================================================
-//                      USART INIT
-// =========================================================
+// USART initialization function:
 
 void usart_init(uint32_t baud)
 {
@@ -43,14 +38,9 @@ void usart_init(uint32_t baud)
 	(1 << UCSZ01) |
 	(1 << UCSZ00);
 
-	// Enable global interrupts.
-	//sei();
 }
 
-
-// =========================================================
-//                      TRANSMIT
-// =========================================================
+// Transmit a single byte over USART:
 
 void usart_tx(uint8_t data)
 {
@@ -66,19 +56,7 @@ void usart_tx(uint8_t data)
 }
 
 
-//void usart_puts(const char *str)
-//{
-	//while (*str)
-	//{
-		//usart_tx(*str);
-		//str++;
-	//}
-//}
-
-
-// =========================================================
-//                       RECEIVE
-// =========================================================
+// Recieve a single byte over USART:
 
 bool usart_rx(uint8_t *data)
 {
@@ -109,10 +87,7 @@ bool usart_data_available(void)
 }
 
 
-// =========================================================
-//                    RX INTERRUPT
-// =========================================================
-
+// USART RX Complete interrupt service routine
 ISR(USART0_RXC_vect)
 {
 	// Reading UDR0 gives us the received character.
@@ -136,9 +111,7 @@ ISR(USART0_RXC_vect)
 }
 
 
-// =========================================================
-//                    PRINTF CONNECTION
-// =========================================================
+// USART printf support:
 
 static int usart_putchar(char c, FILE *stream)
 {

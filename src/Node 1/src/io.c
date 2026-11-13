@@ -30,7 +30,7 @@ io_buttons_t IO_ReadButtons(void)
 }
 
 
-// Check specifically whether R6 is pressed
+// Check if R6 is pressed
 bool IO_R6_Pressed(void)
 {
     io_buttons_t buttons = IO_ReadButtons();
@@ -38,7 +38,7 @@ bool IO_R6_Pressed(void)
     return (buttons.right & R6_MASK) != 0;
 }
 
-// Check whether SR1 is pressed
+// Check if SR1 is pressed
 bool IO_R1_Pressed(void)
 {
     io_buttons_t buttons = IO_ReadButtons();

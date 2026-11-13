@@ -51,40 +51,25 @@ int main(void)
 	OLED_Clear();
 	joystick_button_init();
 	
-	// Dersom CAN ikke initialiseres, vil ikke programmet fortsette.
-	// Bare for å sikre at vi ikke prøver å sende meldinger når CAN ikke er initialisert.
 	if (!can_init(MCP_MODE_NORMAL)) {
 		printf("Failed to initialize CAN controller.\n");
 	}
 
-	//bool shoot_pressed = IO_R1_Pressed();
-
 	menu_init();
 	
-	// uint8_t message[8] = {9, 9, 9, 9, 9, 9, 9, 9};
-
 	uint32_t rx_id = 0;
 	uint8_t rx_length = 0;
 	uint8_t data[8] = {0};
 
 	while (1)
 	{
-		// ---------------- ADC ----------------
 
 		adc_read(adc_values);
-
-		// ---------------- BUTTONS ----------------
-
 		io_buttons_t buttons = IO_ReadButtons();
 
 		bool shoot_pressed = (buttons.right & (1 << 0)) != 0;
 
-
-		// ---------------- MENU ----------------
-
 		menu_update(adc_values);
-
-		// ---------------- JOYSTICK & TOUCHPAD ----------------
 
 		joystick_position_t joystick =
 			joystick_get_position(adc_values);
@@ -95,7 +80,7 @@ int main(void)
 		int8_t servo_control =
 			-(uint8_t)(((int32_t)touch.x * 200) / 255 - 100);
 
-		// ---------------- CAN TRANSMISSION ----------------
+		// CAN transmission: 
 
 		uint8_t message[3] = {
 			(uint8_t)joystick.x,
@@ -115,7 +100,7 @@ int main(void)
 			can_failed++;
 		}
 
-		// Print diagnostics only once every 25 iterations
+		// Debug output every 25 iterations
 		static uint8_t debug_counter = 0;
 
 		if (++debug_counter >= 25)
@@ -130,7 +115,7 @@ int main(void)
 				shoot_pressed);
 		}
 
-		// ---------------- CAN RECEPTION ----------------
+		// CAN reception
 
 		while (can_take_rx_pending())
 		{
@@ -153,8 +138,6 @@ int main(void)
 				printf("\n");
 			}
 		}
-
-		// ---------------- DELAY ----------------
 
 		_delay_ms(20);
 	}
